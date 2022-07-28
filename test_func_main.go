@@ -11,11 +11,11 @@ func main() {
 	Log.Success("Success!")
 	Log.Debug("this is debug！")
 	Log.Error("error!")
-	Log.Fatal("gg!")
 	Log.Trace("Trace")
 	Log.Warning("Warn!")
 	Util.OpenFileToWrite("test.log", []byte("hello world!"))
 	Util.RandomInt(3000, 4000)
 	Util.RandString(4)
+	//Log.Fatal("gg!")
 	Log.Close()
 }

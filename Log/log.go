@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gookit/color"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -23,6 +24,7 @@ const (
 var timeFormatLayout = "2006-01-02 15:04:05"
 
 type Context struct {
+	wg       sync.WaitGroup
 	ctx      context.Context
 	can      context.CancelFunc
 	msg      chan string
@@ -62,6 +64,7 @@ func New(logLevel Level, OnLogFile bool, name ...string) {
 					if err != nil {
 						panic(err)
 					}
+					logContext.wg.Done()
 				case <-selfCtx.Done():
 					break loop
 				}
@@ -72,6 +75,7 @@ func New(logLevel Level, OnLogFile bool, name ...string) {
 					break
 				}
 				_, err := wf.Write([]byte(<-logContext.fMsg))
+				logContext.wg.Done()
 				if err != nil {
 					panic(err)
 				}
@@ -85,6 +89,7 @@ func New(logLevel Level, OnLogFile bool, name ...string) {
 			select {
 			case msg := <-logContext.msg:
 				color.Println(msg)
+				logContext.wg.Done()
 			case <-selfCtx.Done():
 				cancel()
 				break loop
@@ -96,28 +101,29 @@ func New(logLevel Level, OnLogFile bool, name ...string) {
 				break
 			}
 			color.Println(<-logContext.msg)
+			logContext.wg.Done()
 		}
 	}()
 }
 func Close() {
-	for {
-		if len(logContext.msg) == 0 && len(logContext.fMsg) == 0 {
-			break
-		}
-	}
+	logContext.wg.Wait()
 }
 func Warning(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ info ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
+
 	}
 	if logContext.LogLevel < LevelWarning {
 		return
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=FF9900>[ warning ] %s </>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
 func Info(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ info ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
@@ -127,8 +133,10 @@ func Info(cStr string, args ...any) {
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=99CC66>[ info ]</> %s", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
 func Debug(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ debug ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
@@ -138,8 +146,10 @@ func Debug(cStr string, args ...any) {
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=FF6666>[ debug ]</> %s", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
 func Trace(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ trace ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
@@ -149,26 +159,31 @@ func Trace(cStr string, args ...any) {
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=0066CC>[ trace ]</> %s", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
 func Error(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ error ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=FFCCCC>[ error ] %s</>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
 func Fatal(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ fatal ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=FF0033>[ fatal ] %s</>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
-	time.Sleep(1 * time.Second)
+	logContext.wg.Add(1)
 	os.Exit(0)
 }
 func Success(cStr string, args ...any) {
+	logContext.wg.Add(1)
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ fatal ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
@@ -176,6 +191,7 @@ func Success(cStr string, args ...any) {
 	if LevelInfo < logContext.LogLevel {
 		return
 	}
-	msg := fmt.Sprintf("<fg=696969>%s</> <bg=#CCFF99>[ Success ] %s</>", time.Now().Format(timeFormatLayout), cStr)
+	msg := fmt.Sprintf("<fg=696969>%s</> <bg=CCFF99>[ Success ] %s</>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
 }
