@@ -191,7 +191,7 @@ func Success(cStr string, args ...any) {
 	if LevelInfo < logContext.LogLevel {
 		return
 	}
-	msg := fmt.Sprintf("<fg=696969>%s</> <bg=CCFF99>[ Success ] %s</>", time.Now().Format(timeFormatLayout), cStr)
+	msg := fmt.Sprintf("<fg=696969>%s</> <fg=CCFF99>[ Success ] %s</>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
 	logContext.wg.Add(1)
 }
