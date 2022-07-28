@@ -99,6 +99,13 @@ func New(logLevel Level, OnLogFile bool, name ...string) {
 		}
 	}()
 }
+func Close() {
+	for {
+		if len(logContext.msg) == 0 && len(logContext.fMsg) == 0 {
+			break
+		}
+	}
+}
 func Warning(cStr string, args ...any) {
 	if logContext.IsFile {
 		fMsg := fmt.Sprintf("%s [ info ] %s", time.Now().Format(timeFormatLayout), cStr)

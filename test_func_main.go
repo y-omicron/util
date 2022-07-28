@@ -17,4 +17,5 @@ func main() {
 	Util.OpenFileToWrite("test.log", []byte("hello world!"))
 	Util.RandomInt(3000, 4000)
 	Util.RandString(4)
+	Log.Close()
 }
