@@ -1,6 +1,8 @@
 package Util
 
 import (
+	"archive/zip"
+	"bytes"
 	"math/rand"
 	"os"
 	"time"
@@ -30,4 +32,20 @@ func OpenFileToWrite(filename string, date []byte) {
 		panic(err)
 	}
 	wf.Close()
+}
+
+// CreateZipFile 制作Zip文件
+func CreateZipFile(FileName string, FileDate []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	zipWriter := zip.NewWriter(&buf)
+	ioWriter, err := zipWriter.Create(FileName)
+	if err != nil {
+		return nil, err
+	}
+	_, err = ioWriter.Write(FileDate)
+	if err != nil {
+		return nil, err
+	}
+	zipWriter.Close()
+	return buf.Bytes(), nil
 }

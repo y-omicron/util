@@ -188,7 +188,7 @@ func Success(cStr string, args ...any) {
 	if logContext.IsFile {
 		logContext.wg.Add(1)
 
-		fMsg := fmt.Sprintf("%s [ fatal ] %s", time.Now().Format(timeFormatLayout), cStr)
+		fMsg := fmt.Sprintf("%s [ success ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
 	if LevelInfo < logContext.LogLevel {
