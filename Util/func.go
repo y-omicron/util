@@ -2,9 +2,13 @@ package Util
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
+	"github.com/projectdiscovery/httpx/runner"
+	"io/ioutil"
 	"math/rand"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -48,4 +52,61 @@ func CreateZipFile(FileName string, FileDate []byte) ([]byte, error) {
 	}
 	zipWriter.Close()
 	return buf.Bytes(), nil
+}
+
+func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int) [][]string {
+	inputFile := "tmp.ipAddr"
+	if !isFile {
+		_ = os.WriteFile(inputFile, []byte(TagName), 0644)
+		defer os.RemoveAll(inputFile)
+	} else {
+		inputFile = TagName
+	}
+
+	outputFile := "ipAddr.tmp"
+
+	options := runner.Options{
+		Methods:         "GET",
+		InputFile:       inputFile,
+		ExtractTitle:    true,
+		StatusCode:      true,
+		FollowRedirects: true,
+		MaxRedirects:    10,
+		RandomAgent:     true,
+		Timeout:         5,
+		Output:          outputFile,
+		Threads:         Thread,
+	}
+	if Proxy != "" {
+		options.HTTPProxy = Proxy
+	}
+	if err := options.ValidateOptions(); err != nil {
+		panic(err)
+	}
+	HttpXRunner, err := runner.New(&options)
+	if err != nil {
+		panic(err)
+	}
+	defer HttpXRunner.Close()
+
+	HttpXRunner.RunEnumeration()
+	FileDate, _ := ioutil.ReadFile(outputFile)
+	regExp, _ := regexp.Compile(`\x1B\[\d+m`)
+	FileDate = regExp.ReplaceAll(FileDate, []byte(""))
+
+	_ = os.WriteFile(outputFile, FileDate, 0644)
+	defer os.RemoveAll(outputFile)
+
+	rf, err := os.OpenFile(outputFile, os.O_RDWR, 0666) //以读写方式打开文件
+	if nil != err {
+		panic(err)
+	}
+	defer rf.Close()
+	var ret [][]string
+	fc := bufio.NewScanner(rf) //按行读取文件内容
+	regExp, _ = regexp.Compile(`(?U)^(.*) \[(.*)] \[(.*)]`)
+	for fc.Scan() {
+		ret = append(ret, regExp.FindStringSubmatch(fc.Text())[1:])
+	}
+	return ret
 }

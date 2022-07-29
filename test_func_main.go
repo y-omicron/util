@@ -1,21 +1,14 @@
 package main
 
 import (
-	"github.com/y-omicron/util/Log"
+	"fmt"
 	"github.com/y-omicron/util/Util"
+	"strings"
 )
 
 func main() {
-	Log.New(Log.LevelInfo, true, "util.log")
-	Log.Info("Info!")
-	Log.Success("Success!")
-	Log.Debug("this is debug！")
-	Log.Error("error!")
-	Log.Trace("Trace")
-	Log.Warning("Warn!")
-	Util.OpenFileToWrite("test.log", []byte("hello world!"))
-	Util.RandomInt(3000, 4000)
-	Util.RandString(4)
-	//Log.Fatal("gg!")
-	Log.Close()
+	aaa := Util.HttpXFileVerify(false, "172.24.189.26:8888", "http://127.0.0.1:8080", 50)
+	for _, key := range aaa {
+		fmt.Printf("%s\n", strings.Join(key, ", "))
+	}
 }
