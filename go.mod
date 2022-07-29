@@ -3,6 +3,7 @@ module github.com/y-omicron/util
 go 1.18
 
 require (
+	github.com/alecthomas/kong v0.6.1
 	github.com/gookit/color v1.5.1
 	github.com/projectdiscovery/httpx v1.2.3
 )

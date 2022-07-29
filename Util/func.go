@@ -54,7 +54,7 @@ func CreateZipFile(FileName string, FileDate []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int, out chan []string) {
+func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int, out chan<- []string) {
 	inputFile := "tmp.ipAddr"
 	if !isFile {
 		_ = os.WriteFile(inputFile, []byte(TagName), 0644)
@@ -73,7 +73,7 @@ func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int, out 
 		FollowRedirects: true,
 		MaxRedirects:    10,
 		RandomAgent:     true,
-		Timeout:         5,
+		Timeout:         10,
 		Output:          outputFile,
 		Threads:         Thread,
 	}
