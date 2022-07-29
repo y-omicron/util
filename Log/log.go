@@ -123,8 +123,8 @@ func Warning(cStr string, args ...any) {
 	logContext.wg.Add(1)
 }
 func Info(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
 		fMsg := fmt.Sprintf("%s [ info ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
@@ -136,8 +136,8 @@ func Info(cStr string, args ...any) {
 	logContext.wg.Add(1)
 }
 func Debug(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
 		fMsg := fmt.Sprintf("%s [ debug ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
@@ -149,8 +149,8 @@ func Debug(cStr string, args ...any) {
 	logContext.wg.Add(1)
 }
 func Trace(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
 		fMsg := fmt.Sprintf("%s [ trace ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
@@ -162,8 +162,9 @@ func Trace(cStr string, args ...any) {
 	logContext.wg.Add(1)
 }
 func Error(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
+
 		fMsg := fmt.Sprintf("%s [ error ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
@@ -172,8 +173,9 @@ func Error(cStr string, args ...any) {
 	logContext.wg.Add(1)
 }
 func Fatal(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
+
 		fMsg := fmt.Sprintf("%s [ fatal ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
@@ -183,8 +185,9 @@ func Fatal(cStr string, args ...any) {
 	os.Exit(0)
 }
 func Success(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
+
 		fMsg := fmt.Sprintf("%s [ fatal ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
