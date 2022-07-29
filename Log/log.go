@@ -18,6 +18,7 @@ const (
 	LevelInfo
 	LevelWarning
 	LevelError
+	LevelSuccess
 	LevelFatal
 )
 
@@ -43,6 +44,18 @@ func init() {
 		msg:    make(chan string, 10),
 		fMsg:   make(chan string, 10),
 		IsFile: false,
+	}
+}
+func SetLogLevel(strLevel string) {
+	switch strLevel {
+	case "info":
+		logContext.LogLevel = LevelInfo
+	case "success":
+		logContext.LogLevel = LevelSuccess
+	case "debug":
+		logContext.LogLevel = LevelDebug
+	default:
+		logContext.LogLevel = LevelInfo
 	}
 }
 func New(logLevel Level, OnLogFile bool, name ...string) {
@@ -168,6 +181,9 @@ func Error(cStr string, args ...any) {
 		fMsg := fmt.Sprintf("%s [ error ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
+	if LevelError < logContext.LogLevel {
+		return
+	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=FFCCCC>[ error ] %s</>", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
 	logContext.wg.Add(1)
@@ -191,10 +207,23 @@ func Success(cStr string, args ...any) {
 		fMsg := fmt.Sprintf("%s [ success ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 	}
-	if LevelInfo < logContext.LogLevel {
+	if LevelSuccess < logContext.LogLevel {
 		return
 	}
 	msg := fmt.Sprintf("<fg=696969>%s</> <fg=CCFF99>[ Success ] %s</>", time.Now().Format(timeFormatLayout), cStr)
+	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
+}
+func Start(cStr string, args ...any) {
+	if logContext.IsFile {
+		logContext.wg.Add(1)
+		fMsg := fmt.Sprintf("%s [ start ] %s", time.Now().Format(timeFormatLayout), cStr)
+		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
+	}
+	if LevelInfo < logContext.LogLevel {
+		return
+	}
+	msg := fmt.Sprintf("<fg=696969>%s</> <fg=99CC66>[ start ]</> %s", time.Now().Format(timeFormatLayout), cStr)
 	logContext.msg <- fmt.Sprintf(msg, args...)
 	logContext.wg.Add(1)
 }
