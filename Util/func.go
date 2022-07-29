@@ -54,7 +54,7 @@ func CreateZipFile(FileName string, FileDate []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int) [][]string {
+func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int, out chan []string) {
 	inputFile := "tmp.ipAddr"
 	if !isFile {
 		_ = os.WriteFile(inputFile, []byte(TagName), 0644)
@@ -97,16 +97,14 @@ func HttpXFileVerify(isFile bool, TagName string, Proxy string, Thread int) [][]
 	_ = os.WriteFile(outputFile, FileDate, 0644)
 	defer os.RemoveAll(outputFile)
 
-	rf, err := os.OpenFile(outputFile, os.O_RDWR, 0666) //以读写方式打开文件
+	rf, err := os.OpenFile(outputFile, os.O_RDWR, 0644) //以读写方式打开文件
 	if nil != err {
 		panic(err)
 	}
 	defer rf.Close()
-	var ret [][]string
 	fc := bufio.NewScanner(rf) //按行读取文件内容
 	regExp, _ = regexp.Compile(`(?U)^(.*) \[(.*)] \[(.*)]`)
 	for fc.Scan() {
-		ret = append(ret, regExp.FindStringSubmatch(fc.Text())[1:])
+		out <- regExp.FindStringSubmatch(fc.Text())[1:]
 	}
-	return ret
 }
