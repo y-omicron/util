@@ -122,8 +122,8 @@ func Close() {
 	logContext.wg.Wait()
 }
 func Warning(cStr string, args ...any) {
-	logContext.wg.Add(1)
 	if logContext.IsFile {
+		logContext.wg.Add(1)
 		fMsg := fmt.Sprintf("%s [ info ] %s", time.Now().Format(timeFormatLayout), cStr)
 		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
 
