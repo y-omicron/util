@@ -22,6 +22,8 @@
         <method importPath="strings" receiver="*Builder" name="WriteRune" />
         <method importPath="math/rand" receiver="*Rand" name="Read" />
         <method importPath="os" receiver="*File" name="Close" />
+        <method importPath="archive/zip" receiver="*Writer" name="Close" />
+        <method importPath="net" receiver="Conn" name="Close" />
       </methods>
     </inspection_tool>
   </profile>

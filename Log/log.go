@@ -227,3 +227,16 @@ func Start(cStr string, args ...any) {
 	logContext.msg <- fmt.Sprintf(msg, args...)
 	logContext.wg.Add(1)
 }
+func Tip(cStr string, args ...any) {
+	if logContext.IsFile {
+		logContext.wg.Add(1)
+		fMsg := fmt.Sprintf("%s [ start ] %s", time.Now().Format(timeFormatLayout), cStr)
+		logContext.fMsg <- fmt.Sprintf(fMsg, args...)
+	}
+	if LevelInfo < logContext.LogLevel {
+		return
+	}
+	msg := fmt.Sprintf("<fg=CCFFFF>%s</> <fg=CCFFFF>[ tip ]</> %s", time.Now().Format(timeFormatLayout), cStr)
+	logContext.msg <- fmt.Sprintf(msg, args...)
+	logContext.wg.Add(1)
+}

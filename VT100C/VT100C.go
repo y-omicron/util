@@ -37,9 +37,12 @@ func Recv() {
 func Move(ControlType Control, n int) {
 	fmt.Printf("\x1B[%d%s", n, ControlType)
 }
-func CleanLine() {
-	// 2K清除整行
-	fmt.Printf("\x1B[2K")
+func CleanLine(n int) {
+	for i := 0; i < n; i++ {
+		Move(Up, 1)
+		// 2K清除整行
+		fmt.Printf("\x1B[2K")
+	}
 }
 func CleanSnap() {
 	fmt.Printf("\x1B[2J")

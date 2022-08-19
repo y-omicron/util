@@ -1,9 +1,11 @@
 package DataList
 
 import (
-	"ConUi/VT100C"
 	"container/list"
 	"fmt"
+	"github.com/y-omicron/util/VT100C"
+	"strings"
+	"sync"
 )
 
 // DataNode 单个数据，最后利用 Key 来寻找参数
@@ -12,27 +14,40 @@ type DataNode struct {
 	Value string
 }
 
-var maxLine int
-var tmpLine int
-
 func (dn DataNode) String() string {
-	return fmt.Sprintf("%s: %s", dn.Key, dn.Value)
+	return dn.Value
 }
 func (dn DataNode) Len() int {
 	return len(dn.String())
 }
 func (dn *DataNode) New(key, value string) {
-	dn.Set(key, value)
-}
-func (dn *DataNode) Set(key, value string) {
 	dn.Key = key
 	dn.Value = value
 }
+func (dn *DataNode) Set(value string) {
+	dn.Value = value
+}
+func (dn *DataNode) Status() bool {
+	if strings.Contains(dn.Value, "Running") {
+		return true
+	}
+	return false
+}
+
+var maxLine int
 
 // DataList 真正用来存储数据的结构体，有序列表
 type DataList struct {
 	dataMap  map[string]*list.Element
 	dataList *list.List
+	rwMutex  *sync.RWMutex
+}
+
+func (dl *DataList) Lock() {
+	dl.rwMutex.Lock()
+}
+func (dl *DataList) Unlock() {
+	dl.rwMutex.Unlock()
 }
 
 // New 初始化一个 DataList
@@ -40,6 +55,7 @@ func New() *DataList {
 	return &DataList{
 		dataMap:  make(map[string]*list.Element),
 		dataList: list.New(),
+		rwMutex:  &sync.RWMutex{},
 	}
 }
 
@@ -83,33 +99,24 @@ func (dl *DataList) Len() int {
 	return dl.dataList.Len()
 }
 
-func (dl DataList) Show() {
+func (dl *DataList) Show() {
+	dl.print()
+}
+func (dl *DataList) Update() {
+	dl.Lock()
+	VT100C.CleanLine(maxLine)
+	for node := dl.dataList.Front(); node != nil && !node.Value.(*DataNode).Status(); node = node.Next() {
+		fmt.Printf("%s\n", node.Value.(*DataNode).String())
+		dl.Remove(node.Value.(*DataNode))
+	}
+	dl.print()
+	dl.Unlock()
+	return
+}
+func (dl *DataList) print() {
 	maxLine = 0
 	dl.Walk(func(node *DataNode) {
 		fmt.Printf("%s\n", node.String())
 		maxLine++
 	})
-}
-func (dl DataList) Update() {
-	VT100C.Move(VT100C.Up, maxLine)
-	dl.print()
-	if maxLine > tmpLine {
-		var xLine = tmpLine - maxLine
-		for i := 0; i < xLine; i++ {
-			VT100C.CleanLine()
-			fmt.Printf("\n")
-		}
-		VT100C.Move(VT100C.Up, xLine)
-	}
-	maxLine = tmpLine
-	return
-}
-func (dl DataList) print() {
-	tmpLine = 0
-	dl.Walk(func(node *DataNode) {
-		VT100C.CleanLine()
-		fmt.Printf("%s\n", node.String())
-		tmpLine++
-	})
-
 }
